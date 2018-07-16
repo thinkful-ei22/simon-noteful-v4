@@ -3,12 +3,13 @@
 const {Strategy: LocalStrategy} = require('passport-local');
 const User = require('../models/user');
 
+// const isValid = user.validatePassword(password);
+
 const localStrategy = new LocalStrategy((username, password, done) => {
   let user;
   User.findOne({ username })
     .then(results => {
       user = results;
-      console.log(user);
       if (!user) {
         return Promise.reject({
           reason: 'LoginError',
@@ -16,9 +17,9 @@ const localStrategy = new LocalStrategy((username, password, done) => {
           location: 'username'
         });
       }
-      console.log(username);
-      console.log(password);
-      const isValid = user.validatePassword(password);
+      return user.validatePassword(password);
+    })
+    .then(isValid => {
       if (!isValid) {
         return Promise.reject({
           reason: 'LoginError',
