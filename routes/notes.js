@@ -13,7 +13,7 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 
 const validateFolderId = function(folderId, userId) {
   if (!folderId) {
-    return Promise.resolve();
+    return Promise.reject();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid1');
@@ -33,7 +33,7 @@ const validateFolderId = function(folderId, userId) {
 
 const validateTags = function(tags, userId) {
   if(tags === undefined) {
-    return Promise.resolve();
+    return Promise.reject();
   }
   if(!Array.isArray(tags)) {
     const err = new Error('The `tags` must be an array');
@@ -110,7 +110,6 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   const { title, content, folderId, tags = [] } = req.body;
   const userId = req.user.id;
-  const obj = {userId: userId};
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -133,7 +132,7 @@ router.post('/', (req, res, next) => {
   const newNote = { title, content, folderId, tags, userId };
 
   Promise.all([
-    validateFolderId(obj.folderId, userId),
+    validateFolderId(folderId, userId),
     validateTags(tags, userId)
   ])
     .then(() => Note.create(newNote))
@@ -146,17 +145,6 @@ router.post('/', (req, res, next) => {
     .catch(err => {
       next(err);
     });
-
-  // Note.create(newNote)
-  //   .then(result => {
-  //     res
-  //       .location(`${req.originalUrl}/${result.id}`)
-  //       .status(201)
-  //       .json(result);
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
@@ -164,7 +152,6 @@ router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { title, content, folderId, tags = [] } = req.body;
   const userId = req.user.id;
-  const obj = {userId: userId};
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -191,7 +178,7 @@ router.put('/:id', (req, res, next) => {
   const updateNote = { title, content, folderId, tags, userId };
 
   Promise.all([
-    validateFolderId(obj.folderId, userId),
+    validateFolderId(folderId, userId),
     validateTags(tags, userId)
   ])
     .then(() => Note.findByIdAndUpdate(id, updateNote, {new: true}))
@@ -205,18 +192,6 @@ router.put('/:id', (req, res, next) => {
     .catch(err => {
       next(err);
     });
-
-  // Note.findOneAndUpdate({_id: id, userId}, updateNote, { new: true })
-  //   .then(result => {
-  //     if (result) {
-  //       res.json(result);
-  //     } else {
-  //       next();
-  //     }
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
 });
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
