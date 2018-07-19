@@ -7,7 +7,6 @@ const router = express.Router();
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const { fullname, username, password } = req.body;
 
   const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
@@ -22,12 +21,9 @@ router.post('/', (req, res, next) => {
     field => field in req.body && typeof req.body[field] !== 'string'
   );
   if (nonStringField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      messgae: 'Incorrect field type: expected string',
-      location: nonStringField
-    });
+    const err = new Error(`Field: '${nonStringField}' must be type String`);
+    err.status = 422;
+    return next(err);
   }
 
   const explicitlyTrimmedFields = ['username', 'password'];
@@ -35,12 +31,9 @@ router.post('/', (req, res, next) => {
     field => req.body[field].trim() !== req.body[field]
   );
   if (nonTrimmedField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      messgae: 'Cannot start or end with whitespace',
-      location: nonTrimmedField
-    });
+    const err = new Error(`Field: '${nonTrimmedField}' cannot start or end with whitespace`);
+    err.status = 422;
+    return next(err);
   }
 
   const sizedFields = {
@@ -62,18 +55,21 @@ router.post('/', (req, res, next) => {
       'max' in sizedFields[field] &&
         req.body[field].trim().length > sizedFields[field].max
   );
-  if (tooSmallField || tooLargeField) {
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: tooSmallField
-        ? `Must be at least ${sizedFields[tooSmallField]
-          .min} characters long`
-        : `Must be at most ${sizedFields[tooLargeField]
-          .max} characters long`,
-      location: tooSmallField || tooLargeField
-    });
+  if (tooSmallField) {
+    const min = sizedFields[tooSmallField].min;
+    const err = new Error(`Field: '${tooSmallField}' must be at least ${min} characters long`);
+    err.status = 422;
+    return next(err);
   }
+  if (tooLargeField) {
+    const max = sizedFields[tooLargeField].max;
+    const err = new Error(`Field: '${tooLargeField}' must be at most ${max} characters long`);
+    err.status = 422;
+    return next(err);
+  }
+
+  let {username, password, fullname = ''} = req.body;
+  fullname = fullname.trim();
 
   return User.hashPassword(password)
     .then(digest => {
