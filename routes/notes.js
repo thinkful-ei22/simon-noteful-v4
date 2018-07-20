@@ -11,19 +11,38 @@ const router = express.Router();
 
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
+// const validateFolderId = function(folderId, userId) {
+//   if (folderId === '' || folderId === undefined) {
+//     return Promise.resolve();
+//   }
+//   if (!mongoose.Types.ObjectId.isValid(folderId)) {
+//     const err = new Error('The `folderId` is not valid');
+//     err.status = 400;
+//     return Promise.reject(err);
+//   }
+//   return Folder.count({_id: folderId, userId})
+//     .then(count => {
+//       console.log(count);
+//       if(count === 0) {
+//         const err = new Error('The `folderId` is not valid');
+//         err.status = 400;
+//         return Promise.reject(err);
+//       }
+//     });
+// };
+
 const validateFolderId = function(folderId, userId) {
   if (folderId === '' || folderId === undefined) {
     return Promise.resolve();
-  }
-  if (!mongoose.Types.ObjectId.isValid(folderId)) {
+  } 
+  if ((folderId !== '' || folderId === undefined) && !mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return Promise.reject(err);
   }
-  return Folder.count({_id: folderId, userId})
-    .then(count => {
-      console.log(count);
-      if(count === 0) {
+  return Folder.findOne({_id: folderId, userId})
+    .then(result => {
+      if(!result) {
         const err = new Error('The `folderId` is not valid');
         err.status = 400;
         return Promise.reject(err);
@@ -110,7 +129,7 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
-  const newNote = { title, content, folderId, tags, userId };
+  const newNote = { title, content, tags, userId };
   console.log(folderId);
 
   /***** Never trust users - validate input *****/

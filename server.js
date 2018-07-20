@@ -33,12 +33,12 @@ app.use(express.json());
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
-const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
+// const jwtAuth = passport.authenticate('jwt', { session: false, failWithError: true });
 
 // Mount routers
-app.use('/api/notes', jwtAuth, notesRouter);
-app.use('/api/folders', jwtAuth, foldersRouter);
-app.use('/api/tags', jwtAuth, tagsRouter);
+app.use('/api/notes', notesRouter);
+app.use('/api/folders', foldersRouter);
+app.use('/api/tags', tagsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', authRouter);
 
@@ -50,13 +50,21 @@ app.use((req, res, next) => {
 });
 
 // Custom Error Handler
-app.use((err, req, res, next) => {
-  if (err.status) {
-    const errBody = Object.assign({}, err, { message: err.message });
-    res.status(err.status).json(errBody);
-  } else {
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
+// app.use((err, req, res, next) => {
+//   if (err.status) {
+//     const errBody = Object.assign({}, err, { message: err.message });
+//     res.status(err.status).json(errBody);
+//   } else {
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// });
+
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.json({
+    message: err.message,
+    error: app.get('env') === 'development' ? err : {}
+  });
 });
 
 // Listen for incoming connections

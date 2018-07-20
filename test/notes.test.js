@@ -44,7 +44,6 @@ describe('Noteful API - Notes', function () {
         User.createIndexes();
         Folder.createIndexes();
         Tag.createIndexes();
-        Note.createIndexes();
         return [users];
       })
       .then(([users]) => {
