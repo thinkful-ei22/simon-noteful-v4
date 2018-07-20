@@ -33,13 +33,20 @@ describe('Noteful API - Notes', function () {
   beforeEach(function () {
     return Promise.all([
       User.insertMany(seedUsers),
-      User.createIndexes(),
+      // User.createIndexes(),
       Note.insertMany(seedNotes),
       Folder.insertMany(seedFolders),
-      Folder.createIndexes(),
+      // Folder.createIndexes(),
       Tag.insertMany(seedTags),
-      Tag.createIndexes()
+      // Tag.createIndexes()
     ])
+      .then(([users]) => {
+        User.createIndexes();
+        Folder.createIndexes();
+        Tag.createIndexes();
+        Note.createIndexes();
+        return [users];
+      })
       .then(([users]) => {
         user = users[0];
         token = jwt.sign({user}, JWT_SECRET, {subject: user.username});

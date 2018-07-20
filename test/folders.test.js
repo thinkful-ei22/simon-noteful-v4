@@ -29,8 +29,11 @@ describe('Noteful API - Folders', function () {
     return Promise.all([
       User.insertMany(seedUsers),
       Folder.insertMany(seedFolders),
-      Folder.createIndexes()
     ])
+      .then(([users]) => {
+        Folder.createIndexes();
+        return [users];
+      })
       .then(([users]) => {
         user = users[0];
         token = jwt.sign({user}, JWT_SECRET, {subject: user.username});
