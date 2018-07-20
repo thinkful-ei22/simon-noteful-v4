@@ -7,13 +7,13 @@ const passport = require('passport');
 const Note = require('../models/note');
 const Tag = require('../models/tag');
 const Folder = require('../models/folder');
-
 const router = express.Router();
+
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
 const validateFolderId = function(folderId, userId) {
   if (folderId === undefined) {
-    return Promise.reject();
+    return Promise.resolve();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
     const err = new Error('The `folderId` is not valid');
@@ -33,7 +33,7 @@ const validateFolderId = function(folderId, userId) {
 
 const validateTags = function(tags, userId) {
   if(tags === undefined) {
-    return Promise.reject();
+    return Promise.resolve();
   }
   if(!Array.isArray(tags)) {
     const err = new Error('The `tags` must be an array');

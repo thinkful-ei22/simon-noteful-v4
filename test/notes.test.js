@@ -225,8 +225,8 @@ describe('Noteful API - Notes', function () {
       const newItem = {
         title: 'The best article about cats ever!',
         content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...',
-        tags: ['222222222222222222222200'],
-        folderId:'111111111111111111111100'
+        // tags: ['222222222222222222222200'],
+        // folderId:'111111111111111111111100'
       };
       let res;
       return chai.request(app)
@@ -239,7 +239,7 @@ describe('Noteful API - Notes', function () {
           expect(res).to.have.header('location');
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'tags', 'userId', 'folderId');
+          expect(res.body).to.have.all.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'tags', 'userId');
           return Note.findById({_id: res.body.id, userId: user.id});
         })
         .then(data => {
@@ -311,8 +311,8 @@ describe('Noteful API - Notes', function () {
       const updateItem = {
         title: 'What about dogs?!',
         content: 'Lorem ipsum dolor sit amet, sed do eiusmod tempor...',
-        tags: ['222222222222222222222200'],
-        folderId:'111111111111111111111100'
+        // tags: ['222222222222222222222200'],
+        // folderId:'111111111111111111111100'
       };
       let data;
       return Note.findOne({userId: user.id})
