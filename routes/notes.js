@@ -12,7 +12,7 @@ const router = express.Router();
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
 const validateFolderId = function(folderId, userId) {
-  if (folderId === undefined) {
+  if (folderId === '' || folderId === undefined) {
     return Promise.resolve();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
@@ -111,6 +111,7 @@ router.post('/', (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
   const newNote = { title, content, folderId, tags, userId };
+  console.log(folderId);
 
   /***** Never trust users - validate input *****/
   if (!title) {
