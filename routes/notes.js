@@ -12,11 +12,11 @@ const router = express.Router();
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
 const validateFolderId = function(folderId, userId) {
-  if (!folderId) {
+  if (folderId === undefined) {
     return Promise.reject();
   }
   if (!mongoose.Types.ObjectId.isValid(folderId)) {
-    const err = new Error('The `folderId` is not valid1');
+    const err = new Error('The `folderId` is not valid');
     err.status = 400;
     return Promise.reject(err);
   }
@@ -24,7 +24,7 @@ const validateFolderId = function(folderId, userId) {
     .then(count => {
       console.log(count);
       if(count === 0) {
-        const err = new Error('The `folderId` is not valid2');
+        const err = new Error('The `folderId` is not valid');
         err.status = 400;
         return Promise.reject(err);
       }
@@ -108,8 +108,9 @@ router.get('/:id', (req, res, next) => {
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
-  const { title, content, folderId, tags = [] } = req.body;
+  const { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
+  const newNote = { title, content, folderId, tags, userId };
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -120,7 +121,6 @@ router.post('/', (req, res, next) => {
 
   if (tags) {
     tags.forEach((tag) => {
-      console.log(tag);
       if (!mongoose.Types.ObjectId.isValid(tag)) {
         const err = new Error('The tags `id` is not valid');
         err.status = 400;
@@ -129,7 +129,9 @@ router.post('/', (req, res, next) => {
     });
   }
 
-  const newNote = { title, content, folderId, tags, userId };
+  if (mongoose.Types.ObjectId.isValid(folderId)) {
+    newNote.folderId = folderId;
+  }
 
   Promise.all([
     validateFolderId(folderId, userId),
@@ -150,7 +152,7 @@ router.post('/', (req, res, next) => {
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
-  const { title, content, folderId, tags = [] } = req.body;
+  const { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
 
   /***** Never trust users - validate input *****/
